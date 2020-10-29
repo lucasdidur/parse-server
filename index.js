@@ -16,11 +16,10 @@ var parseServer = new ParseServer({
   cloud: process.env.CLOUD_CODE_MAIN  || __dirname + '/cloud/main.js',
   appId: process.env.APP_ID           || 'myAppId',
   masterKey: process.env.MASTER_KEY   || '', //Add your master key here. Keep it secret!
-  serverURL: process.env.SERVER_URL   || 'http://localhost:1337/parse',  // Don't forget to change to https if needed
+  serverURL: process.env.SERVER_URL   || 'http://localhost:8080/parse',  // Don't forget to change to https if needed
   liveQuery: {
     classNames: ["Posts", "Comments"] // List of classes to support for query subscriptions
   },
-  tracing: true,
 });
 // Client-keys like the javascript key or the .NET key are not necessary with parse-server
 // If you wish you require them, you can set them as options in the initialization above:
@@ -29,12 +28,13 @@ var parseServer = new ParseServer({
 const parseGraphQLServer = new ParseGraphQLServer(
   parseServer,
   {
-    graphQLPath: '/graphql',
-    playgroundPath: '/playground'
+    graphQLPath: '/graphql'
   }
 );
 
 var app = express();
+
+parseGraphQLServer.applyGraphQL(app);
 
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')));
@@ -54,13 +54,11 @@ app.get('/test', function(req, res) {
   res.sendFile(path.join(__dirname, '/public/test.html'));
 });
 
-parseGraphQLServer.applyGraphQL(app);
-parseGraphQLServer.applyPlayground(app);
 
-var port = process.env.PORT || 1337;
+var port = process.env.PORT || 8080;
 var httpServer = require('http').createServer(app);
 httpServer.listen(port, function() {
-    console.log('parse-server-example running on port ' + port + '.');
+    console.log('Parse Server is running on port ' + port + '.');
 });
 
 // This will enable the Live Query real-time server
